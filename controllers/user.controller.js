@@ -42,12 +42,18 @@ exports.create = (req, res) => {
 }
 
 exports.findAll = (req, res) => {
-    //TODO: Implementar busca com condição
-    User.findAll()
+    const name = req.query.name;
+
+    let condition = name ? { name: { [Op.like]: `%${name}%` } } : null
+
+    User.findAll({ where: condition })
         .then(data => {
             res
                 .status(200)
-                .send(data)
+                .send({
+                    count: data.length,
+                    data: data
+                })
         })
         .catch(err => {
             res
@@ -97,9 +103,47 @@ exports.update = (req, res) => {
 }
 
 exports.delete = (req, res) => {
-    // deleta um usuário
+    const id = req.params.id;
+
+    User.destroy({
+        where: { id: id }
+    })
+        .then(occ => {
+            if (occ == 1) {
+                res.send({
+                    message: "O usuário foi deletado com sucesso."
+                });
+                return;
+            }
+
+            res.send({
+                message: `Não foi possível deletear o usuário. O id ${id} não foi encontrado.`
+            });
+        }).catch(err => {
+            res
+                .status(500)
+                .send({
+                    message: `Não foi possível deletear o usuário com id: ${id}`
+
+                })
+        })
 }
 
 exports.deleteAll = (req, res) => {
-    // deleta todos os usuários
+    User.destroy({
+        where: {},
+        truncate: false
+    })
+        .then(count => {
+            res.send({
+                message: `${count} usuários foram removidos.`
+            })
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .send({
+                    message: "Não foi possível deletar os usários."
+                })
+        })
 }
