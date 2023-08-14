@@ -28,7 +28,9 @@ exports.create = (req, res) => {
 
     User.create(user)
         .then(data => {
-            res.send(data)
+            res
+                .status(201)
+                .send(data)
         })
         .catch(err => {
             res
@@ -40,15 +42,58 @@ exports.create = (req, res) => {
 }
 
 exports.findAll = (req, res) => {
-    // busca todos os usuários 
+    //TODO: Implementar busca com condição
+    User.findAll()
+        .then(data => {
+            res
+                .status(200)
+                .send(data)
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .send({
+                    message: err.message || "Algum erro ocorreu enquanto recuperavamos os usuários"
+                })
+        })
 }
 
 exports.findOne = (req, res) => {
-    // busca usuário por id
+    const id = req.params.id;
+
+    User.findByPk(id)
+        .then(data => {
+            res
+                .send(data);
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .send({
+                    message: "Erro ao buscar o usuário com id: " + id
+                });
+        })
 }
 
 exports.update = (req, res) => {
-    // atualiza um usuário
+    const id = req.params.id;
+    let body = req.body;
+
+    User.update(body, {
+        where: { id: id }
+    }).then(occ => {
+        if (occ == 1) {
+            res
+                .send({
+                    message: "O usuário foi atualizado com sucesso."
+                })
+            return;
+        }
+
+        res.send({
+            message: `Não foi possível atualizar o usuário. O id ${id} não foi encontrado. `
+        })
+    })
 }
 
 exports.delete = (req, res) => {
